@@ -1,8 +1,10 @@
 import { app } from './app'
 
-app.listen({
-  port: 3333
-})
-  .then(() => {
-    console.log('Server is running')
+async function start(): Promise<void> {
+  await app.listen({
+    port: 3333
   })
+  console.log('Server is running')
+}
+
+start()
