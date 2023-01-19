@@ -70,4 +70,50 @@ export async function appRoutes(app: FastifyInstance): Promise<void> {
       completeHabits
     }
   })
+
+  app.patch('/habits/:id/toggle', async (request: FastifyRequest) => {
+    const toggleHabitParams = z.object({
+      id: z.string()
+    })
+
+    const { id } = toggleHabitParams.parse(request.params)
+
+    const today = dayjs().startOf('day').toDate()
+
+    let day = await prisma.day.findUnique({
+      where: {
+        date: today
+      }
+    })
+    if (day === null) {
+      day = await prisma.day.create({
+        data: {
+          date: today
+        }
+      })
+    }
+
+    const dayHabit = await prisma.dayHabit.findUnique({
+      where: {
+        day_id_habit_id: {
+          day_id: day.id,
+          habit_id: id
+        }
+      }
+    })
+    if (dayHabit !== null) {
+      await prisma.dayHabit.delete({
+        where: {
+          id: dayHabit.id
+        }
+      })
+    } else {
+      await prisma.dayHabit.create({
+        data: {
+          day_id: day.id,
+          habit_id: id
+        }
+      })
+    }
+  })
 }
